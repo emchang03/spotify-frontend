@@ -66,6 +66,8 @@ a, button{
   .page-option {
     font-size: 2vmin;
     margin-left: 3rem;
+    text-decoration: none;
+    color: black;
   }
 
 /* MOODRING (just centers stuff in the div) */
@@ -78,30 +80,43 @@ a, button{
     border-radius: 45vmin; /* Create a perfect circle using border-radius */
     margin-bottom: 1rem;
     border: 2px solid white;
+}
 
-
-
-
+.subtitle{
+  margin: 0;
 }
 
 .mood-options {
     display: flex;
     justify-content: center;
     align-items: center;
-  }
+    }
 
 
 /* FOOTER */
 .footer{
+  display: flex;
+  justify-content: center;
   bottom: 0;
   left: 0;
   width: 100%;
   text-align: center;
-  padding: 10px;
  }
 
  .footer-button{
     display: inline-block;
-    padding: 8px 16px;
-    font-size: 2vmin; 
+    font-size: small; 
+    margin-top: 2rem;
+ }
+
+ 
+
+ /* PRIVACY & ABOUT */
+ .privacy{
+  width: 70%;
+ }
+ 
+ a{
+  font-size: medium;
+  color: black;
  }

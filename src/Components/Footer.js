@@ -5,7 +5,7 @@ import {logout} from '../spotify';
 const Footer = () => {
     return(
         <div className="footer">
-         <button className="button-to-link" onClick={logout}>Logout</button>
+         <button className="button-to-link footer-button" onClick={logout}>Logout</button>
         </div>
     );
 };

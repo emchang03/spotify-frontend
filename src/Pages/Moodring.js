@@ -1,5 +1,9 @@
 import React, {useState, useEffect} from "react";
 import "../global.css";
+// import {accessToken} from '../spotify'
+// import { LOCALSTORAGE_VALUES } from "../spotify";
+import { logout } from "../spotify";
+
 
 
 
@@ -7,18 +11,23 @@ const Moodring = ({token}) => {
     const [tracks, setTracks] = useState([]);
     const [yourMoods, setYourMoods] = useState([]);
     const [clicked, setClicked] = useState(); 
-    const moodOptions = ["unhappy", "stressed", "nervous", "calm", "happy", "alert", "angry", "energized", "melancholy",  "content"];
-    const colorOptions = [ "#25266f", "#01010d", "#a8a8a8", "#b1c563","#e080ab","#fcea3a","#d3484b", "#af63c5", "#5e173a", "#00a183"]; 
+    const moodOptions = ["unhappy", "stressed", "nervous", "calm", "happy", "alert", "angry", "energized", "melancholy",  "content", "apathetic"];
+    const colorOptions = [ "#25266f", "#01010d", "#a8a8a8", "#b1c563","#e080ab","#fcea3a","#d3484b", "#af63c5", "#5e173a", "#00a183", "#488E45"]; 
+    const [token2, setToken] = useState(token); 
 
+    // useEffect(()=> {
+    //     setToken(accessToken);
+    //     // on FIRST login, initially says it is null but after a refresh will store the proper token values 
+    //   }, [])
+   
 
     useEffect(() => {
         const getTracks = async () => {
           try{
-        
             var myHeaders = new Headers();
             myHeaders.append("Accept", "application/json");
             myHeaders.append("Content-Type", "application/json");
-            myHeaders.append("Authorization", "Bearer " + token);
+            myHeaders.append("Authorization", "Bearer " + token2);
 
             var requestOptions = {
             method: 'GET',
@@ -48,12 +57,13 @@ const Moodring = ({token}) => {
         
 
           }catch(error){
-            console.log(error.body);
+            console.log("hahah there is an error: " + error.body);
+            logout();
           }
         };
     
         getTracks(); 
-      }, [token]);
+      }, [token2]);
 
 
       // for each song, get a mood 
@@ -62,11 +72,10 @@ const Moodring = ({token}) => {
 
 
       const getMoods = async () => {
-
         // clicked = true;
         let beforeMoods = [];
-        for (var i = 0; i<50; ++i){
-            beforeMoods[i] = songToMood(tracks[i]);
+        for (var i = 0; i<50; ++i){ 
+          beforeMoods[i] = songToMood(tracks[i]);
         }        
         // turn promises into an array 
         var moods = await Promise.all(beforeMoods);
@@ -116,11 +125,12 @@ const Moodring = ({token}) => {
 
       const songToMood = async (id) => {
 
-        // MAKE THE API REQUEST!! 
+        try{
+                 // MAKE THE API REQUEST!! 
         var myHeaders = new Headers();
         myHeaders.append("Accept", "application/json");
         myHeaders.append("Content-Type", "application/json");
-        myHeaders.append("Authorization", "Bearer " + token);
+        myHeaders.append("Authorization", "Bearer " + token2);
 
         var requestOptions = {
           method: 'GET',
@@ -155,7 +165,7 @@ const Moodring = ({token}) => {
             return 1;
           }
           else{
-            return 9; // content
+            return 10; // apathy
           }
         }
         else if(valence >= 0.65){
@@ -179,13 +189,18 @@ const Moodring = ({token}) => {
             //return moodOptions[6]; // angry 
             return 6;
           }
-          else if(danceability < 0.5){
+          else if(danceability < 0.3){
             //return moodOptions[5]; // alert
             return 5;
           }
           else{
             return 9; // content
           }
+        }
+        } 
+        catch(e){
+          console.log("times up!");
+          logout();
         }
 
       // end song to mood function!! 
@@ -217,14 +232,14 @@ const Moodring = ({token}) => {
                     {moodOptions[yourMoods[2]]}
                   </h3> 
                 </div>
-                <p style={{fontSize: "small"}}> refresh this page to regnerate your moods after listening to 20+ songs</p>
+                <p className="subtitle" style={{fontSize: "small", display: "flex"}}> refresh this page to regnerate your moods after listening to 20+ songs</p>
               </div>
               ) : (
                 
                 
               <div className="center-container">
                 <h2>are you ready to see your <p className="inline" style={{color: "#8D0688"}}>moods</p>?</h2>
-                <button className="button-to-link" onClick={()=>{getMoods(); setClicked(true)}}>
+                <button className="button-to-link" onClick={()=> {getMoods(); setClicked(true)}}>
                 generate my moods
                 </button>
               </div>
@@ -241,6 +256,7 @@ const Moodring = ({token}) => {
 
 export default Moodring
 
+
 // TODO:  
 // refresh token  
-// add header pages + redo routing  --> NavLink
+
