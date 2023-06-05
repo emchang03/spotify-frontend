@@ -14,7 +14,7 @@ const Home = () =>{
 
     const LOGIN_URI = process.env.NODE_ENV !== 'production'
     ? 'http://localhost:8888/login'
-    : 'https://spotify-profile-v2.herokuapp.com/login'; 
+    : process.env.BACKEND_URI; 
 
 
     if(token){
