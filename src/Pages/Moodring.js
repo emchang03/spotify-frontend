@@ -124,13 +124,13 @@ const Moodring = ({token}) => {
 
 
       const songToMood = async (id) => {
-
-        try{
+        let songData;
+        // try{
                  // MAKE THE API REQUEST!! 
         var myHeaders = new Headers();
         myHeaders.append("Accept", "application/json");
         myHeaders.append("Content-Type", "application/json");
-        myHeaders.append("Authorization", "Bearer " + token2);
+        myHeaders.append("Authorization", "Bearer " + token2); // + token2
 
         var requestOptions = {
           method: 'GET',
@@ -138,71 +138,72 @@ const Moodring = ({token}) => {
           redirect: 'follow'
         };
         
-        let songData = await fetch(`https://api.spotify.com/v1/audio-features/${id}`, requestOptions);
-          
-        songData = await songData.json();
+        songData = await fetch(`https://api.spotify.com/v1/audio-features/${id}`, requestOptions);
+
+        if(songData.status === 401 || songData === null){
+          logout(); 
+        } else{
+          songData = await songData.json();
         
-        let danceability = songData.danceability;
-        let energy = songData.energy;
-        // let instrumentalness = songData.instrumentalness; 
-        // let mode = songData.mode;
-        let valence = songData.valence;
-
-        console.log("Song to Mood"); 
-
-        if(valence <= 0.35){
-          // melancholy, stressed, nervous 
-          if(energy <= 0.40){
-            //return moodOptions[8]; // melancholy
-            return 8;
+          let danceability = songData.danceability;
+          let energy = songData.energy;
+          // let instrumentalness = songData.instrumentalness; 
+          // let mode = songData.mode;
+          let valence = songData.valence;
+  
+          console.log("Song to Mood"); 
+  
+          if(valence <= 0.35){
+            // melancholy, stressed, nervous 
+            if(energy <= 0.40){
+              //return moodOptions[8]; // melancholy
+              return 8;
+            }
+            else if (energy >= 0.60) {
+              //return moodOptions[2]; // nervous 
+              return 2;
+            }
+            else if(danceability < 0.5){
+              //return moodOptions[1]; // stressed
+              return 1;
+            }
+            else{
+              return 10; // apathy
+            }
           }
-          else if (energy >= 0.60) {
-            //return moodOptions[2]; // nervous 
-            return 2;
+          else if(valence >= 0.65){
+            // happy, energized 
+            if(energy >= 0.65){
+              //return moodOptions[7]; // energized
+              return 7;
+            }
+            else{
+              //return moodOptions[4]; // happy 
+              return 4;
+            }
           }
-          else if(danceability < 0.5){
-            //return moodOptions[1]; // stressed
-            return 1;
-          }
+          // medium valence 
           else{
-            return 10; // apathy
+            if(energy <= 0.45){
+              //return moodOptions[3]; // calm 
+              return 3;
+            }
+            else if (energy >= 0.8) {
+              //return moodOptions[6]; // angry 
+              return 6;
+            }
+            else if(danceability < 0.3){
+              //return moodOptions[5]; // alert
+              return 5;
+            }
+            else{
+              return 9; // content
+            }
           }
         }
-        else if(valence >= 0.65){
-          // happy, energized 
-          if(energy >= 0.65){
-            //return moodOptions[7]; // energized
-            return 7;
-          }
-          else{
-            //return moodOptions[4]; // happy 
-            return 4;
-          }
-        }
-        // medium valence 
-        else{
-          if(energy <= 0.45){
-            //return moodOptions[3]; // calm 
-            return 3;
-          }
-          else if (energy >= 0.8) {
-            //return moodOptions[6]; // angry 
-            return 6;
-          }
-          else if(danceability < 0.3){
-            //return moodOptions[5]; // alert
-            return 5;
-          }
-          else{
-            return 9; // content
-          }
-        }
-        } 
-        catch(e){
-          console.log("times up!");
-          logout();
-        }
+          
 
+   
       // end song to mood function!! 
       }
 
