@@ -13,17 +13,11 @@ const Moodring = ({token}) => {
     const [clicked, setClicked] = useState(); 
     const moodOptions = ["unhappy", "stressed", "nervous", "calm", "happy", "alert", "angry", "energized", "melancholy",  "content", "apathetic"];
     const colorOptions = [ "#25266f", "#01010d", "#a8a8a8", "#b1c563","#e080ab","#fcea3a","#d3484b", "#af63c5", "#5e173a", "#00a183", "#488E45"]; 
-    const [token2, setToken] = useState(token); 
-
-    // useEffect(()=> {
-    //     setToken(accessToken);
-    //     // on FIRST login, initially says it is null but after a refresh will store the proper token values 
-    //   }, [])
-   
+    const [token2] = useState(token); 
 
     useEffect(() => {
         const getTracks = async () => {
-          try{
+          let data; 
             var myHeaders = new Headers();
             myHeaders.append("Accept", "application/json");
             myHeaders.append("Content-Type", "application/json");
@@ -35,15 +29,11 @@ const Moodring = ({token}) => {
             redirect: 'follow'
             };
 
-            let data = await fetch("https://api.spotify.com/v1/me/player/recently-played?limit=50", requestOptions);
-            // .then(response => response.text())
-            // .then(result => console.log(result))
-          
-
+            data = await fetch("https://api.spotify.com/v1/me/player/recently-played?limit=50", requestOptions);
             data = await data.json();
             data = data.items;
             console.log(data);
-
+  
             let trackId = [];
             let trackName = [];
             for(var i=0; i<data.length; ++i){
@@ -52,14 +42,8 @@ const Moodring = ({token}) => {
             }
             console.log(trackId);
             console.log(trackName);
-
+  
             setTracks(trackId);
-        
-
-          }catch(error){
-            console.log("hahah there is an error: " + error.body);
-            logout();
-          }
         };
     
         getTracks(); 
@@ -125,8 +109,6 @@ const Moodring = ({token}) => {
 
       const songToMood = async (id) => {
         let songData;
-        // try{
-                 // MAKE THE API REQUEST!! 
         var myHeaders = new Headers();
         myHeaders.append("Accept", "application/json");
         myHeaders.append("Content-Type", "application/json");
@@ -140,7 +122,7 @@ const Moodring = ({token}) => {
         
         songData = await fetch(`https://api.spotify.com/v1/audio-features/${id}`, requestOptions);
 
-        if(songData.status === 401 || songData === null){
+        if(songData.status !== 200){
           logout(); 
         } else{
           songData = await songData.json();
@@ -201,9 +183,6 @@ const Moodring = ({token}) => {
             }
           }
         }
-          
-
-   
       // end song to mood function!! 
       }
 
@@ -256,8 +235,3 @@ const Moodring = ({token}) => {
 };
 
 export default Moodring
-
-
-// TODO:  
-// refresh token  
-
