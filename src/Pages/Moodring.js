@@ -63,7 +63,7 @@ const Moodring = ({token}) => {
 
       const getMoods = async () => {
 
-        if(tracks.length === 0){
+        if(tracks.length < 3){
           setTriggerLogout(true);
         }
         // clicked = true;
