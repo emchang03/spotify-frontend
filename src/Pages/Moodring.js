@@ -1,10 +1,9 @@
 import React, {useState, useEffect} from "react";
 import "../global.css";
-// import {accessToken} from '../spotify'
-// import { LOCALSTORAGE_VALUES } from "../spotify";
 import { logout } from "../spotify";
+import { Navigate } from "react-router-dom";
 
-
+// error handling: invalid token for whatever reason- no access from spotify, not enough songs listened to, needs refresh token, should log you out and send you to the home page
 
 
 const Moodring = ({token}) => {
@@ -14,10 +13,10 @@ const Moodring = ({token}) => {
     const moodOptions = ["unhappy", "stressed", "nervous", "calm", "happy", "alert", "angry", "energized", "melancholy",  "content", "apathetic"];
     const colorOptions = [ "#25266f", "#01010d", "#a8a8a8", "#b1c563","#e080ab","#fcea3a","#d3484b", "#af63c5", "#5e173a", "#00a183", "#488E45"]; 
     const [token2] = useState(token); 
+    const [triggerLogout, setTriggerLogout] = useState(false);
 
     useEffect(() => {
         const getTracks = async () => {
-          let data; 
             var myHeaders = new Headers();
             myHeaders.append("Accept", "application/json");
             myHeaders.append("Content-Type", "application/json");
@@ -29,10 +28,18 @@ const Moodring = ({token}) => {
             redirect: 'follow'
             };
 
-            data = await fetch("https://api.spotify.com/v1/me/player/recently-played?limit=50", requestOptions);
-            data = await data.json();
-            data = data.items;
-            console.log(data);
+            let data;
+            try{
+              data = await fetch("https://api.spotify.com/v1/me/player/recently-played?", requestOptions);
+              data = await data.json();
+              data = data.items;
+              console.log(data);
+            } catch (e){
+              console.log("useEffect error " );
+              logout();
+            }
+             
+            
   
             let trackId = [];
             let trackName = [];
@@ -45,67 +52,32 @@ const Moodring = ({token}) => {
   
             setTracks(trackId);
         };
-    
-        getTracks(); 
+  
+        try{
+          getTracks(); 
+        } catch (error){
+          setTriggerLogout(true);
+        }
+        
       }, [token2]);
 
-
-      // for each song, get a mood 
-        // show the 2 most prevalent moods 
-
-
-
       const getMoods = async () => {
+
+        if(tracks.length === 0){
+          setTriggerLogout(true);
+        }
         // clicked = true;
         let beforeMoods = [];
-        for (var i = 0; i<50; ++i){ 
+        for (var i = 0; i<tracks.length; ++i){ 
           beforeMoods[i] = songToMood(tracks[i]);
         }        
         // turn promises into an array 
         var moods = await Promise.all(beforeMoods);
-
-        // set the state of all the moods from all 50 songs 
-        console.log(moods);
-
         let yourMoods = mostFrequent(moods,3);
         setYourMoods(yourMoods);
         console.log(yourMoods);
 
       }
-
-
-      const mostFrequent = (allMoods, num) => {
-        const map = {};
-        let keys = [];
-        console.log("inside mostFrequent: " + allMoods);
-        for (let i = 0; i < allMoods.length; i++) {
-           if (map[allMoods[i]]) {
-              map[allMoods[i]]++;
-           } else {
-              map[allMoods[i]] = 1;
-           }
-        }
-        for (let w in map) {
-           keys.push(w);
-        }
-        keys = keys.sort((a, b) => {
-     
-           if (map[a] === map[b]) {
-     
-              if (a > b) {
-                 return 1;
-              } else {
-                 return -1;
-              }
-           }
-           else {
-              return map[b] - map[a];
-           }
-        })
-        .slice(0, num);
-        return keys;
-     };
-
 
       const songToMood = async (id) => {
         let songData;
@@ -123,14 +95,12 @@ const Moodring = ({token}) => {
         songData = await fetch(`https://api.spotify.com/v1/audio-features/${id}`, requestOptions);
 
         if(songData.status !== 200){
-          logout(); 
+          setTriggerLogout(true); 
         } else{
           songData = await songData.json();
         
           let danceability = songData.danceability;
           let energy = songData.energy;
-          // let instrumentalness = songData.instrumentalness; 
-          // let mode = songData.mode;
           let valence = songData.valence;
   
           console.log("Song to Mood"); 
@@ -186,13 +156,50 @@ const Moodring = ({token}) => {
       // end song to mood function!! 
       }
 
-      
-    return(
-      
-        <div>
-            {
-              clicked ? (
-              <div className="center-container">
+      const mostFrequent = (allMoods, num) => {
+        const map = {};
+        let keys = [];
+        console.log("inside mostFrequent: " + allMoods);
+        for (let i = 0; i < allMoods.length; i++) {
+           if (map[allMoods[i]]) {
+              map[allMoods[i]]++;
+           } else {
+              map[allMoods[i]] = 1;
+           }
+        }
+        for (let w in map) {
+           keys.push(w);
+        }
+        keys = keys.sort((a, b) => {
+     
+           if (map[a] === map[b]) {
+     
+              if (a > b) {
+                 return 1;
+              } else {
+                 return -1;
+              }
+           }
+           else {
+              return map[b] - map[a];
+           }
+        })
+        .slice(0, num);
+        return keys;
+     };
+
+
+
+
+
+
+    if(clicked){
+      if(triggerLogout){
+        return (<Navigate to='/error'/>);
+      }
+      else{
+        return(
+          <div className="center-container">
                 <h2 style={{marginBottom:"0"}}>lately, your <p className="inline" style={{color: "#8D0688"}}>moods</p> have been...</h2>
 
                 <div className="ellipse " style={{
@@ -214,24 +221,59 @@ const Moodring = ({token}) => {
                 </div>
                 <p className="subtitle" style={{fontSize: "small", display: "flex"}}> refresh this page to regnerate your moods after listening to 20+ songs</p>
               </div>
-              ) : (
+        )
+      }
+    } else{
+      return(
+        <div className="center-container">
+        <h2>are you ready to see your <p className="inline" style={{color: "#8D0688"}}>moods</p>?</h2>
+        <button className="button-to-link" onClick={()=> {getMoods(); setClicked(true)}}>
+        generate my moods
+        </button>
+      </div>
+      )
+    }
+    // return(
+      
+    //     <div>
+    //         {
+    //           clicked ? (
+    //           <div className="center-container">
+    //             <h2 style={{marginBottom:"0"}}>lately, your <p className="inline" style={{color: "#8D0688"}}>moods</p> have been...</h2>
+
+    //             <div className="ellipse " style={{
+    //                 background: `radial-gradient(${colorOptions[yourMoods[0]]}, ${colorOptions[yourMoods[1]]}, ${colorOptions[yourMoods[2]]})`}}> 
+    //             </div>
+
+    //             <div className="mood-options">
+    //               <h3 className="inline color-word" style={{color: colorOptions[yourMoods[0]]}} >
+    //                 {moodOptions[yourMoods[0]] + ", "}
+    //               </h3>
+
+    //               <h3 className="inline color-word" style={{color: colorOptions[yourMoods[1]]}}>
+    //                 {moodOptions[yourMoods[1]] + ", "}
+    //               </h3>
+            
+    //               <h3 className="inline color-word" style={{color: colorOptions[yourMoods[2]]}}>
+    //                 {moodOptions[yourMoods[2]]}
+    //               </h3> 
+    //             </div>
+    //             <p className="subtitle" style={{fontSize: "small", display: "flex"}}> refresh this page to regnerate your moods after listening to 20+ songs</p>
+    //           </div>
+    //           ) : (
                 
                 
-              <div className="center-container">
-                <h2>are you ready to see your <p className="inline" style={{color: "#8D0688"}}>moods</p>?</h2>
-                <button className="button-to-link" onClick={()=> {getMoods(); setClicked(true)}}>
-                generate my moods
-                </button>
-              </div>
+    //           <div className="center-container">
+    //             <h2>are you ready to see your <p className="inline" style={{color: "#8D0688"}}>moods</p>?</h2>
+    //             <button className="button-to-link" onClick={()=> {getMoods(); setClicked(true)}}>
+    //             generate my moods
+    //             </button>
+    //           </div>
                 
-             )
-            }
-
-   
-
-
-        </div>
-    );
+    //          )
+    //         }
+    //     </div>
+    // );
 };
 
 export default Moodring

@@ -10,7 +10,7 @@ const About = () => {
 
         <h3>The Project</h3>
         <p>
-        Moodring is a project utilizing the Spotify Web API. By taking your 50 most recently played tracks, Moodring analyzes the audio data from each track to render the 3 most prevalent moods your recent songs have demonstrated. Keep in mind, 50 songs is almost 3 hours of music, and your mood can change a lot in that duration! This project was built using an Express server and React for the frontend. 
+        Moodring is a project utilizing the Spotify Web API. By taking your 20 most recently played tracks, Moodring analyzes the audio data from each track to render the 3 most prevalent moods your recent songs have demonstrated. Keep in mind, this build is still under review by the Spotify Developer Team, meaning only verified email addresses will work for the project. Stay tuned for updates! This project was built using an Express.js server and React.js frontend. 
         </p>
 
 

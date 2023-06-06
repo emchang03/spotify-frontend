@@ -4,6 +4,7 @@ import Privacy from './Pages/Privacy'
 import About from './Pages/About'
 import Home from './Pages/Home'
 import Moodring from './Pages/Moodring';
+import Error from './Pages/Error';
 
 const router = createBrowserRouter(createRoutesFromElements(
   <Route path= '/' element={<Root/>}>
@@ -12,6 +13,7 @@ const router = createBrowserRouter(createRoutesFromElements(
     <Route path= '/moodring' element={ <Moodring/>}/>
     <Route path= '/privacy' element={<Privacy />}/>
     <Route path= '/about' element={ <About />}/>
+    <Route path= '/error' element={ <Error />} />
   </Route>
 ));
 
