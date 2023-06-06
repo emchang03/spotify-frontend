@@ -2,6 +2,8 @@
 
 https://mymoodring.onrender.com 
 
-To run locally:\ 
-npm install\  
-npm start\   
+To run locally:
+
+  npm install
+  
+  npm start
